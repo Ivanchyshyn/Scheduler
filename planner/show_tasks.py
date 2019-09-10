@@ -11,7 +11,8 @@ import sqlite3
 def print_tasks(tasks):
     if tasks:
         for task in tasks:
-            print('{} {}'.format(*task))
+            name, day = task
+            print('{} - {}'.format(day.strftime('%d %b %Y'), name))
     else:
         print('No tasks')
     print()
@@ -23,10 +24,21 @@ def show(day):
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM planner')
         date_format = '%d.%m.%Y'
+        written_days = {
+            'tomorrow': datetime.timedelta(days=1),
+            'yesterday': -datetime.timedelta(days=1),
+        }
         if day is None:
             today = datetime.datetime.now()
         else:
-            today = datetime.datetime.strptime(day, date_format)
+            try:
+                today = datetime.datetime.strptime(day, date_format)
+            except (TypeError, ValueError):
+                if day in written_days:
+                    today = datetime.datetime.now() + written_days[day]
+                else:
+                    print('Incorrect input. Please try again! (Format: day.month.year or "yesterday/tomorrow")')
+                    return
         tasks = []
         past_tasks = []
         future_tasks = []
@@ -40,6 +52,7 @@ def show(day):
                 future_tasks.append((name, date))
         past_tasks = sorted(past_tasks, key=operator.itemgetter(1), reverse=True)
         future_tasks = sorted(future_tasks, key=operator.itemgetter(1))
+        print('\nStart day:', today.strftime('%d %b %Y'), '\n')
         print('Today tasks:')
         print_tasks(tasks)
         print('Past tasks:')

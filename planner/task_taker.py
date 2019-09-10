@@ -17,6 +17,7 @@ def create():
         cursor.execute('CREATE TABLE IF NOT EXISTS planner (name text, date text)')
         cursor.execute('INSERT INTO planner VALUES (?, ?)', (name, task_time))
         conn.commit()
+        print('\nTask "{}" created at day {}\n'.format(name, task_time))
     finally:
         if conn:
             conn.close()
